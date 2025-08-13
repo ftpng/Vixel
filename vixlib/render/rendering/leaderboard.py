@@ -24,12 +24,12 @@ async def render_leaderboard(
     im = ImageRender(bg.load_default_background())
 
     im.text.draw_many([
-        (f'&f{mode} {type} Leaderboard', {'position': (413, 52)}),
-        (f'&fPos', {'position': (76, 99)}),
-        (f'&fPlayers', {'position': (368, 99)}),
-        (f'&f{type}', {'position': (705, 99)}),
+        (f'&f{mode} {type} Leaderboard', {'position': (413, 53)}),
+        (f'&fPos', {'position': (76, 100)}),
+        (f'&fPlayers', {'position': (368, 100)}),
+        (f'&f{type}', {'position': (705, 100)}),
     ], default_text_options={
-        "shadow_offset": (2, 2), "align": "center", "font_size": 20}
+        "shadow_offset": (2, 2), "align": "center", "font_size": 18}
     )
 
     y = 146
@@ -68,7 +68,7 @@ async def render_leaderboard(
         im.text.draw(
             f"{displayname}", 
             text_options={
-                "position": (160, y),
+                "position": (135, y),
                 "font_size": 18,
                 "shadow_offset": (2, 2),
                 "align": "left"
@@ -85,9 +85,9 @@ async def render_leaderboard(
             }
         )
 
-        await im.skin.paste_skin(
-            uuid, position=(131, y_skin), size=(20, 20), style='face'
-        )
+        #await im.skin.paste_skin(
+        #    uuid, position=(131, y_skin), size=(20, 20), style='face'
+        #)
 
         y += 46
         y_skin += 46

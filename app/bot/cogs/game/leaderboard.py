@@ -58,4 +58,4 @@ class Leaderboard(commands.Cog):
             await handle_slash_errors(interaction, error) 
 
 async def setup(client: commands.Bot) -> None:
-    await client.add_cog(Leaderboard(client))            
+    await client.add_cog(Leaderboard(client))

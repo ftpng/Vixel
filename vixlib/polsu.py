@@ -132,7 +132,7 @@ async def fetch_polsu_player_ping(
     }
 
     if cache:
-        cache_path = f"{lib.DIR}vixlib/cache/ping/ping_cache_{uuid}.sqlite"
+        cache_path = f"{lib.DIR}vixlib/cache/ping/ping_cache.sqlite"
     else:
         cache_path = None
 
@@ -195,7 +195,7 @@ async def fetch_polsu_bedwars_formatted_name(
     }
 
     if cache:
-        cache_path = f"{lib.DIR}vixlib/cache/formatted/formatted_cache_{uuid}.sqlite"
+        cache_path = f"{lib.DIR}vixlib/cache/formatted/formatted_cache.sqlite"
     else:
         cache_path = None
 

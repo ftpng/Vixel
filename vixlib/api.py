@@ -14,8 +14,8 @@ from .errors import HypixelInvalidResponseError, HypixelRateLimitedError
 
 logger = logging.getLogger(__name__)
 
-STATS_CACHE_PATH = f"{DIR}vixlib/cache/stats_cache"
-SKIN_CACHE_PATH = f"{DIR}vixlib/cache/skin_cache"
+STATS_CACHE_PATH = f"{DIR}vixlib/cache/stats_cache.sqlite"
+SKIN_CACHE_PATH = f"{DIR}vixlib/cache/skin_cache.sqlite"
 
 
 async def _fetch_hypixel_data(
