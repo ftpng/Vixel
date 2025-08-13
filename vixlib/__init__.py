@@ -4,7 +4,6 @@ from .api import *
 from .lists import *
 from .formats import *
 from .polsu import *
-from .mojang import *
 
 from .database import ensure_cursor, async_ensure_cursor, Cursor
 
