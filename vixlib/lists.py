@@ -1,0 +1,100 @@
+from discord.app_commands import Choice
+
+MODES = [
+    Choice(name="Overall", value="Overall"),
+    Choice(name="Solos", value="Solos"),
+    Choice(name="Doubles", value="Doubles"),
+    Choice(name="Threes", value="Threes"),
+    Choice(name="Fours", value="Fours"),
+    Choice(name="4v4", value="4v4"),
+]
+
+TYPES_LEADERBOARD = [
+    Choice(name="Stars", value="stars"),
+    Choice(name="Winstreak", value="winstreak"),
+    Choice(name="Total Games", value="games_played"),
+    Choice(name="Wins", value="wins"),
+    Choice(name="Losses", value="losses"),
+    Choice(name="WLR", value="wlr"),
+    Choice(name="Final Kills", value="final_kills"),
+    Choice(name="Final Deaths", value="final_deaths"),
+    Choice(name="FKDR", value="fkdr"),
+    Choice(name="Kills", value="kills"),
+    Choice(name="Deaths", value="deaths"),
+    Choice(name="KDR", value="kdr"),
+    Choice(name="Beds Broken", value="beds_broken"),
+    Choice(name="Beds Lost", value="beds_lost"),
+    Choice(name="BBLR", value="bblr"),
+]
+
+VALID_COLUMNS = {
+    "uuid",
+    "created_at",
+    "experience",
+    "wins_bedwars",
+    "losses_bedwars",
+    "final_kills_bedwars",
+    "final_deaths_bedwars",
+    "kills_bedwars",
+    "deaths_bedwars",
+    "beds_broken_bedwars",
+    "beds_lost_bedwars",
+
+    "eight_one_wins_bedwars",
+    "eight_one_losses_bedwars",
+    "eight_one_final_kills_bedwars",
+    "eight_one_final_deaths_bedwars",
+    "eight_one_kills_bedwars",
+    "eight_one_deaths_bedwars",
+    "eight_one_beds_broken_bedwars",
+    "eight_one_beds_lost_bedwars",
+
+    "eight_two_wins_bedwars",
+    "eight_two_losses_bedwars",
+    "eight_two_final_kills_bedwars",
+    "eight_two_final_deaths_bedwars",
+    "eight_two_kills_bedwars",
+    "eight_two_deaths_bedwars",
+    "eight_two_beds_broken_bedwars",
+    "eight_two_beds_lost_bedwars",
+
+    "four_three_wins_bedwars",
+    "four_three_losses_bedwars",
+    "four_three_final_kills_bedwars",
+    "four_three_final_deaths_bedwars",
+    "four_three_kills_bedwars",
+    "four_three_deaths_bedwars",
+    "four_three_beds_broken_bedwars",
+    "four_three_beds_lost_bedwars",
+
+    "four_four_wins_bedwars",
+    "four_four_losses_bedwars",
+    "four_four_final_kills_bedwars",
+    "four_four_final_deaths_bedwars",
+    "four_four_kills_bedwars",
+    "four_four_deaths_bedwars",
+    "four_four_beds_broken_bedwars",
+    "four_four_beds_lost_bedwars",
+
+    "two_four_wins_bedwars",
+    "two_four_losses_bedwars",
+    "two_four_final_kills_bedwars",
+    "two_four_final_deaths_bedwars",
+    "two_four_kills_bedwars",
+    "two_four_deaths_bedwars",
+    "two_four_beds_broken_bedwars",
+    "two_four_beds_lost_bedwars",
+}
+
+PAGE_RANGES = {
+    1: (1, 10),
+    2: (11, 20),
+    3: (21, 30),
+    4: (31, 40),
+    5: (41, 50),
+    6: (51, 60),
+    7: (61, 70),
+    8: (71, 80),
+    9: (81, 90),
+    10: (91, 100)
+}

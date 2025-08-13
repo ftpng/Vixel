@@ -1,0 +1,84 @@
+from discord import Interaction, SelectOption, File
+from discord.ui import Select, View
+
+from vixlib.render.rendering import render_bedwars_stats, render_session_stats
+import vixlib as lib
+
+
+class ModeSelector(Select):
+    def __init__(self):
+        options = [
+            SelectOption(label="Overall"),
+            SelectOption(label="Solos"),
+            SelectOption(label="Doubles"),
+            SelectOption(label="Threes"),
+            SelectOption(label="Fours"),
+            SelectOption(label="4v4"),
+        ]
+        super().__init__(
+            placeholder="Select A Mode",
+            max_values=1,
+            min_values=1,
+            options=options,
+            custom_id="mode_selector_bedwars"
+        )
+
+    async def callback(self, interaction: Interaction):
+        if not interaction.response.is_done():
+            await interaction.response.defer()
+
+        view: ModesView = self.view
+        view.mode = self.values[0]
+        await view.update_mode(interaction)
+
+
+class ModesView(View):
+    def __init__(
+        self, 
+        interaction: Interaction, 
+        org_user: int,
+        uuid: str,
+        mode: str,
+        type: str,
+        timeout: int = 180
+    ):
+        super().__init__(timeout=timeout)
+        self.org_user: int = org_user
+        self.mode: str = mode
+        self.interaction: Interaction = interaction  
+        self.uuid: str = uuid
+        self.type: str = type
+
+        self.add_item(ModeSelector())
+
+    async def update_mode(self, interaction: Interaction):
+
+        if self.type == 'bedwars':
+            await render_bedwars_stats(self.uuid, self.mode)
+            await interaction.edit_original_response(
+                attachments=[File(f"{lib.DIR}assets/imgs/bedwars.png")],
+                view=self
+            )
+        
+        elif self.type == 'session':
+            await render_session_stats(self.uuid, self.mode)
+            await interaction.edit_original_response(
+                attachments=[File(f"{lib.DIR}assets/imgs/session.png")],
+                view=self
+            )            
+        
+    async def interaction_check(self, interaction: Interaction):
+        if self.org_user == 0:
+            return True
+            
+        if interaction.user.id != self.org_user:
+            await interaction.response.send_message(
+                content=f"That message doesn't belong to you. You must run this command to interact with it.",
+                ephemeral=True
+            )
+            return False
+        return True
+
+    async def on_timeout(self):
+        self.clear_items()
+        await self.interaction.edit_original_response(view=None)
