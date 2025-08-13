@@ -178,3 +178,4 @@ cython_debug/
 **/data/**
 .env 
 **/vixlib/cache/**
+**/assets/imgs/**
