@@ -177,4 +177,4 @@ cython_debug/
 **/logs/**
 **/data/**
 .env 
-**/vixlib/cache/**
+**/vixlib/api/cache/**
