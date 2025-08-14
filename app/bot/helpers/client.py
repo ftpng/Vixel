@@ -1,9 +1,7 @@
 import os
-import logging
 import discord
 from discord.ext import commands
 
-logger = logging.getLogger(__name__)
 
 intents = discord.Intents.all()
 intents.message_content = True
@@ -14,7 +12,7 @@ class Client(commands.AutoShardedBot):
 
         super().__init__(
             intents=intents,
-            command_prefix=commands.when_mentioned_or('vox$')
+            command_prefix=commands.when_mentioned_or('vix$')
         )
 
 
@@ -24,11 +22,11 @@ class Client(commands.AutoShardedBot):
                 if cog.endswith(".py"):
                     try:
                         await self.load_extension(name=f"app.bot.cogs.{folder}.{cog[:-3]}")
-                        logger.info(f"Loaded: {cog[:-3]} cog")
+                        print(f"Loaded: {cog[:-3]} cog")
 
                     except commands.errors.ExtensionNotFound:
-                        logger.warning(f"Failed to load {cog[:-3]}")      
+                        print(f"Failed to load {cog[:-3]}")      
 
 
     async def on_ready(self):
-        logger.info(f'Logged in as {self.user} (ID: {self.user.id})\n{50 * "-"}')
+        print(f'Logged in as {self.user} (ID: {self.user.id})\n{50 * "-"}')
