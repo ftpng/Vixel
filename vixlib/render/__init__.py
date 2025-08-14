@@ -3,7 +3,6 @@ from . import text
 from .colors import ColorMappings, PrestigeColorMaps, Prestige, PrestigeColorEnum, PrestigeColors
 from .background import BackgroundImageLoader
 from .image import ImageRender
-from .usernames import DisplayName
 
 __all__ = [
     'tools',

@@ -1,7 +1,6 @@
 from PIL import Image, UnidentifiedImageError 
 from typing import Literal, TypedDict
 from io import BytesIO
-from vixlib.hypixel import Leveling
 
 from .text import render_mc_text
 from .colors import Prestige
@@ -207,11 +206,7 @@ class SkinRender:
 
             self._image.alpha_composite(composite_image)
 
-        except UnidentifiedImageError as error:
-            from vixlib.logging import log_error
-            log_error(str(error))
+        except (UnidentifiedImageError, Exception) as error:
+            print(error)
 
-        except Exception as error:
-            from vixlib.logging import log_error
-            log_error(str(error))
             
