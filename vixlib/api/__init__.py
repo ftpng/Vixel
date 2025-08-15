@@ -4,7 +4,10 @@ from .cache import (
     CACHE_PATH,
     SKIN_CACHE,
     STATS_CACHE,
-    MOJANG_CACHE
+    MOJANG_CACHE,
+    PING_CACHE,
+    FORMATTED_NAME_CACHE, 
+    LEADERBOARD_CACHES
 )
 
 
@@ -14,5 +17,8 @@ __all__ = [
     'CACHE_PATH',
     'SKIN_CACHE',
     'STATS_CACHE',
-    'MOJANG_CACHE'
+    'MOJANG_CACHE',
+    'PING_CACHE',
+    'FORMATTED_NAME_CACHE',
+    'LEADERBOARD_CACHES'
 ]
