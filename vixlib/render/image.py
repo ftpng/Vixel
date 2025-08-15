@@ -5,7 +5,7 @@ from io import BytesIO
 from .text import render_mc_text
 from .colors import Prestige
 
-import vixlib as lib
+from vixlib.api import fetch_skin_model
 
 
 class TextOptions(TypedDict):
@@ -184,7 +184,7 @@ class SkinRender:
         self._text_render = text_render 
 
     async def _skin_url(self, uuid: str, style: str):
-        return await lib.fetch_skin_model(uuid, style=style)
+        return await fetch_skin_model(uuid, style=style)
 
     async def paste_skin(
         self, 

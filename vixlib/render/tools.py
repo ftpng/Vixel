@@ -1,7 +1,5 @@
 import re
 
-from .colors import PrestigeColorMaps
-
 
 def split_string(
     input_string: str,
