@@ -7,7 +7,7 @@ from .utils import (
 
 
 class BedwarsStats:
-    def __init__(self, hypixel_data: dict, gamemode: str='overall'):
+    def __init__(self, hypixel_data: dict, gamemode: str = 'Overall'):
         self._gamemode = gamemode
         self._hypixel_player_data = get_player_dict(hypixel_data)
 
@@ -61,5 +61,5 @@ class BedwarsStats:
 
 
     def _get_mode_stats(self, key: str, default=0) -> int:
-        prefix = BEDWARS_MODES_MAP.get(self._gamemode.lower())
+        prefix = BEDWARS_MODES_MAP.get(self._gamemode)
         return self._bedwars_data.get(f'{prefix}{key}', default)

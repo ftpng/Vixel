@@ -1,10 +1,11 @@
 from aiohttp_client_cache import SQLiteBackend
+from requests_cache import CachedSession
 from vixlib import DIR
 
 
 CACHE_PATH: str = f"{DIR}vixlib/api/cache/"
 
-MOJANG_CACHE = SQLiteBackend(
+MOJANG_CACHE = CachedSession(
     cache_name=f"{CACHE_PATH}mojang_cache.sqlite",
     expire_after=60
 )

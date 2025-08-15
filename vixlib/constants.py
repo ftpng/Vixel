@@ -20,5 +20,7 @@ LIGHT_RED = 0xFF5555
 GREEN_DOT: int = "<:GreenDot:1404572042631581726>"
 RED_DOT: int = "<:RedDot:1404572039947223093>"
 
-
-
+ERROR_MESSAGE: str = (
+    "An error has occurred while running your command, please try again!\n"
+    "If the issue persists, please report this to **Vixel's Dev Team**!"
+)

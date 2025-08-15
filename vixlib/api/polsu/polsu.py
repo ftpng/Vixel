@@ -65,13 +65,10 @@ async def fetch_polsu_data(
         "User-Agent": "Vixel Stats Bot Version 1"
     }
 
-    if not cache:
-        cache_path = None
-
     async def fetch():
         for attempt in range(retries + 1):
             try:
-                if not cache_path:
+                if not cache:
                     async with ClientSession() as session:
                         resp = await session.get(url, headers=headers, params=params, timeout=5)
                         data: dict = await resp.json()

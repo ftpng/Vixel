@@ -4,17 +4,24 @@ from typing import Literal
 PROGRESS_BAR_MAX = 10
 
 BEDWARS_MODES_MAP = {
-    "overall": "",
-    "solos": "eight_one_",
-    "doubles": "eight_two_",
-    "threes": "four_three_",
-    "fours": "four_four_",
+    "Overall": "",
+    "Solos": "eight_one_",
+    "Doubles": "eight_two_",
+    "Threes": "four_three_",
+    "Fours": "four_four_",
     "4v4": "two_four_"
 }
 
 
 def get_player_dict(hypixel_data: dict) -> dict:
     return hypixel_data.get('player') or {}
+
+
+def get_player_guild_dict(hypixel_data: dict) -> dict:
+    player_data = hypixel_data.get('player') or {}
+    if 'guild' in hypixel_data:
+        player_data['guild'] = hypixel_data['guild']
+    return player_data
 
 
 def ratio(dividend: int | float, divisor: int | float) -> int | float:
