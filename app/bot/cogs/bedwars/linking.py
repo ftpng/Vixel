@@ -28,12 +28,10 @@ class Link(commands.Cog):
             )            
 
         hypixel_data = await fetch_hypixel_player_data(uuid, cache=False)
-        print(hypixel_data)
         response = Linking(interaction.user.id).link_player(
             str(interaction.user), hypixel_data, uuid
         )
 
-        print(response)
         if response == 1:
             username = Player(player=uuid, requests_obj=MOJANG_CACHE).name
             await interaction.edit_original_response(
