@@ -21,7 +21,7 @@ class Session:
             "4v4": "two_four_",
         }
 
-        fields_to_store = [
+        fields = [
             "wins",
             "losses",
             "final_kills",
@@ -52,7 +52,7 @@ class Session:
         for mode, prefix in modes.items():
             stats = BedwarsStats(hypixel_data, mode)
 
-            mode_values = {k: getattr(stats, k, None) for k in fields_to_store}
+            mode_values = {k: getattr(stats, k, None) for k in fields}
 
             for key, value in mode_values.items():
                 if value is None:

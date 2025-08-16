@@ -86,13 +86,23 @@ class ProgressRender:
         self,
         level: int,
         progress_percentage: int | float,
+        current_xp: int | float,
         positions: dict, 
         font_size: int
     ) -> None:
         
         xp_bar_progress = self.progress_bar_max * progress_percentage / 100
-        colored_chars = self.progress_symbol * int(xp_bar_progress)
-        gray_chars = self.progress_symbol * (self.progress_bar_max - int(xp_bar_progress))
+
+        if current_xp < 500:
+            min_colored_boxes = 1
+        elif 500 <= current_xp < 1000:
+            min_colored_boxes = 2
+        else:
+            min_colored_boxes = 0
+
+        colored_count = max(int(xp_bar_progress), min_colored_boxes)
+        colored_chars = self.progress_symbol * colored_count
+        gray_chars = self.progress_symbol * (self.progress_bar_max - colored_count)
 
         chars_text = f'&b{colored_chars}&7{gray_chars}'
         formatted_lvl_text = Prestige(int(level)).color_level
@@ -125,7 +135,6 @@ class ProgressRender:
                 "align": "left"
             }
         )
-
 
     async def draw_progression(
         self, 

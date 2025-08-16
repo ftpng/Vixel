@@ -66,12 +66,12 @@ async def render_bedwars_stats(
         "shadow_offset": (2, 2), "align": "center", "font_size": 20},
     )
 
-
     lvl_progress, lvl_target, lvl_progress_percent = stats.leveling.progression
 
     await im.progress.draw_progress_bar(
         level=stats.level,
         progress_percentage=lvl_progress_percent,
+        current_xp=lvl_progress,
         positions={
             'left': (430, 173),
             'center': (520, 172),

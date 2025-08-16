@@ -14,8 +14,8 @@ class LevelProgressionTuple(NamedTuple):
 class Leveling:
     def __init__(
         self,
-        xp: int | None=None,
-        level: int | None=None
+        xp: int | None = None,
+        level: int | None = None
     ) -> None:
         assert (xp, level).count(None) == 1, "Either level or xp must be provided."
 
@@ -24,16 +24,16 @@ class Leveling:
         self.__progression = None
 
     @staticmethod
-    def __calc_level(xp: int) -> float:  
-        level: int = 100 * (xp // 487000)  
-        xp %= 487000  
+    def __calc_level(xp: int) -> float:
+        prestige = 100 * (xp // 487000)
+        xp_remainder = xp % 487000
         xp_map = (0, 500, 1500, 3500, 7000)
 
         for index, value in enumerate(xp_map):
-            if xp < value:
-                factor = xp_map[index-1]
-                return level + ((xp - factor) / (value - factor)) + (index - 1)
-        return level + (xp - 7000) / 5000 + 4
+            if xp_remainder < value:
+                factor = xp_map[index - 1]
+                return prestige + (index - 1) + ((xp_remainder - factor) / (value - factor))
+        return prestige + 4 + (xp_remainder - 7000) / 5000
 
     @property
     def level(self) -> float:
@@ -65,17 +65,20 @@ class Leveling:
         return self.__xp
 
     @staticmethod
+    def xp_needed_for_next_level(level: int) -> int:
+        """XP required to reach the next level from given integer level."""
+        levels_since_prestige = int(level % 100)
+        xp_map = {0: 500, 1: 1000, 2: 2000, 3: 3500}
+        return xp_map.get(levels_since_prestige, 5000)
+
+    @staticmethod
     def __calc_progression(level: float) -> LevelProgressionTuple:
-        lvls_since_pres = level % 100
+        target_xp = Leveling.xp_needed_for_next_level(int(level))
+        decimal_part = level - int(level)
+        progress_xp = round(decimal_part * target_xp)
+        progress_percent = (progress_xp / target_xp) * 100 if target_xp else 0.0
 
-        level_xp_map: dict = {0: 500, 1: 1000, 2: 2000, 3: 3500}
-        lvl_target_xp: int = level_xp_map.get(int(lvls_since_pres), 5000)
-
-        lvl_progress_xp = float(f'.{decimal_of(level)}') * lvl_target_xp
-        lvl_progress_percentage = lvl_progress_xp / lvl_target_xp * 100
-
-        return LevelProgressionTuple(
-            int(lvl_progress_xp), int(lvl_target_xp), lvl_progress_percentage)
+        return LevelProgressionTuple(progress_xp, target_xp, progress_percent)
 
     @property
     def progression(self) -> LevelProgressionTuple:

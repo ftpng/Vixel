@@ -1,12 +1,13 @@
 from discord.ext import commands
 from discord import app_commands, Interaction, File
-import vixlib as lib 
 
 from vixlib.render.rendering import render_bedwars_stats
 from vixlib.api.polsu import fetch_polsu_data
 from vixlib.api.hypixel import fetch_hypixel_player_data
 from vixlib.utils import fetch_player
 from vixlib.views import ModesView
+
+import vixlib as lib
 
 
 class Bedwars(commands.Cog):
