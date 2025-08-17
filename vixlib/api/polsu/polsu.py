@@ -14,6 +14,29 @@ from .errors import PolsuInvalidResponseError, PolsuRateLimitedError
 import vixlib as lib
 
 
+ping_session = None
+formatted_session = None
+leaderboard_sessions = {}
+
+
+async def init_sessions():
+    global ping_session, formatted_session, leaderboard_sessions
+    ping_session = CachedSession(cache=PING_CACHE)
+    formatted_session = CachedSession(cache=FORMATTED_NAME_CACHE)
+    leaderboard_sessions = {
+        mode: CachedSession(cache=backend)
+        for mode, backend in LEADERBOARD_CACHES.items()
+    }
+
+async def close_all_sessions():
+    if ping_session:
+        await ping_session.close()
+    if formatted_session:
+        await formatted_session.close()
+    for session in leaderboard_sessions.values():
+        await session.close()
+
+
 async def fetch_polsu_data(
     endpoint: str,
     *,
@@ -36,26 +59,23 @@ async def fetch_polsu_data(
     if endpoint == "leaderboard":
         if not (mode and type_):
             raise ValueError("mode and type_ are required for leaderboard endpoint")
-
         url = "https://api.polsu.xyz/polsu/leaderboard/bedwars"
         params = {"mode": mode, "type": type_, "top": top}
-        backend = LEADERBOARD_CACHES[mode]
+        session = leaderboard_sessions[mode] if cache else None
 
     elif endpoint == "ping":
         if not uuid:
             raise ValueError("uuid is required for ping endpoint")
-
         url = "https://api.polsu.xyz/polsu/ping"
         params = {"uuid": uuid}
-        backend = PING_CACHE
+        session = ping_session if cache else None
 
     elif endpoint == "formatted":
         if not uuid:
             raise ValueError("uuid is required for formatted endpoint")
-
         url = "https://api.polsu.xyz/polsu/bedwars/formatted"
         params = {"uuid": uuid}
-        backend = FORMATTED_NAME_CACHE
+        session = formatted_session if cache else None
 
     else:
         raise ValueError("Invalid endpoint. Must be 'leaderboard', 'ping', or 'formatted'.")
@@ -68,14 +88,13 @@ async def fetch_polsu_data(
     async def fetch():
         for attempt in range(retries + 1):
             try:
-                if not cache:
-                    async with ClientSession() as session:
-                        resp = await session.get(url, headers=headers, params=params, timeout=5)
-                        data: dict = await resp.json()
+                if cache:
+                    resp = await session.get(url, headers=headers, params=params, timeout=5)
+                    data: dict = await resp.json()
                 else:
-                    async with CachedSession(cache=backend) as session:
-                        resp = await session.get(url, headers=headers, params=params, timeout=5)
-                        data: dict = await resp.json()
+                    async with ClientSession() as tmp_session:
+                        async with tmp_session.get(url, headers=headers, params=params, timeout=5) as resp:
+                            data: dict = await resp.json()
 
                 if "error" in data:
                     if "rate limit" in data["error"] or data.get("throttle"):

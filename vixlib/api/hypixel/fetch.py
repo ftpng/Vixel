@@ -5,16 +5,25 @@ from http.client import RemoteDisconnected
 
 from requests import ReadTimeout, ConnectTimeout
 from aiohttp import ClientSession, ContentTypeError
-from aiohttp_client_cache import CachedSession, SQLiteBackend
+from aiohttp_client_cache import CachedSession
 
 from .errors import HypixelInvalidResponseError, HypixelRateLimitedError
 from ..cache import STATS_CACHE
 
+stats_session: CachedSession | None = None
 
-async def __make_hypixel_request(
-    session: ClientSession,
-    url: str
-) -> dict:
+
+async def init_hypixel_session():
+    global stats_session
+    stats_session = CachedSession(cache=STATS_CACHE)
+
+
+async def close_hypixel_session():
+    if stats_session:
+        await stats_session.close()
+
+
+async def __make_hypixel_request(session: ClientSession, url: str) -> dict:
     api_key = getenv('API_KEY_HYPIXEL')
     options = {
         'url': url,
@@ -27,7 +36,6 @@ async def __make_hypixel_request(
 async def __fetch_hypixel_data(
     url: str,
     cache: bool = True,
-    cached_session: SQLiteBackend = STATS_CACHE,
     retries: int = 3,
     retry_delay: int = 5
 ) -> dict:
@@ -37,8 +45,8 @@ async def __fetch_hypixel_data(
                 async with ClientSession() as session:
                     return await __make_hypixel_request(session, url)
 
-            async with CachedSession(cache=cached_session) as session:
-                return await __make_hypixel_request(session, url)
+            resp = await stats_session.get(url, headers={"API-Key": getenv("API_KEY_HYPIXEL")}, timeout=5)
+            return await resp.json()
 
         except (ReadTimeout, ConnectTimeout, TimeoutError, asyncio.TimeoutError,
                 JSONDecodeError, RemoteDisconnected, ContentTypeError) as exc:
@@ -54,7 +62,6 @@ async def __fetch_hypixel_data(
 async def fetch_hypixel_player_data(
     uuid: str,
     cache: bool = True,
-    cached_session: SQLiteBackend = STATS_CACHE,
     retries: int = 3,
     retry_delay: int = 5,
     attempts: int = 5,
@@ -65,7 +72,7 @@ async def fetch_hypixel_player_data(
 
     for attempt in range(attempts + 1):
         hypixel_data = await __fetch_hypixel_data(
-            player_url, cache, cached_session, retries, retry_delay
+            player_url, cache, retries, retry_delay
         )
 
         if not hypixel_data.get('success') and hypixel_data.get('throttle'):
@@ -81,7 +88,7 @@ async def fetch_hypixel_player_data(
             if include_guild:
                 guild_url = f"https://api.hypixel.net/guild?player={uuid}"
                 guild_data = await __fetch_hypixel_data(
-                    guild_url, cache, cached_session, retries, retry_delay
+                    guild_url, cache, retries, retry_delay
                 )
                 if guild_data.get("guild"):
                     hypixel_data["guild"] = guild_data["guild"]

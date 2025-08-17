@@ -1,4 +1,8 @@
+from mcfetch import Player
+
 import vixlib as lib
+from vixlib.api import MOJANG_CACHE
+
 
 BEDWARS_LEADERBOARDS = {
     "overall": {
@@ -439,3 +443,28 @@ BEDWARS_LEADERBOARDS = {
         }
     }
 }
+
+async def get_leaderboard_page(
+    data: dict,
+    player: str,
+) -> tuple[int | None, int | None]:
+
+    uuid = Player(player=player, requests_obj=MOJANG_CACHE).uuid
+    if not uuid:
+        return None, None
+
+    undashed_uuid = uuid.replace('-', '')
+
+    leaderboard = data.get("data", {}).get("leaderboard", [])
+    index = next(
+        (i for i, p in enumerate(leaderboard) if str(p.get('uuid', '')).replace('-', '') == undashed_uuid),
+        None
+    )
+
+    if index is None:
+        return None, None
+    
+    page = index // 10 + 1
+    pos = index % 10 + 1
+
+    return page, pos

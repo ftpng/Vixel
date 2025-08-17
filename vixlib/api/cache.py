@@ -55,10 +55,16 @@ LEADERBOARD_CACHE_OVERALL = SQLiteBackend(
     expire_after=300
 )
 
+LEADERBOARD_CACHE_FOUR_VS_FOUR = SQLiteBackend(
+    cache_name=f"{CACHE_PATH}/leaderboards/leaderboard_cache_4v4.sqlite",
+    expire_after=300
+)
+
 LEADERBOARD_CACHES = {
     "solos": LEADERBOARD_CACHE_SOLO,
     "doubles": LEADERBOARD_CACHE_DOUBLES,
     "threes": LEADERBOARD_CACHE_THREES,
     "fours": LEADERBOARD_CACHE_FOURS,
+    "4v4" : LEADERBOARD_CACHE_FOUR_VS_FOUR,
     "overall": LEADERBOARD_CACHE_OVERALL
 }

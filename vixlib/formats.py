@@ -51,7 +51,7 @@ def format_value(
         return str(val)
     
 
-def format_lb_name(name: str) -> str:
+def format_name(name: str) -> str:
     result = ""
     skip_next = False
     for char in name:
@@ -63,3 +63,9 @@ def format_lb_name(name: str) -> str:
             continue
         result += char
     return result
+
+
+def format_name_colored(name: str) -> str:
+    if not name:
+        return ""
+    return name.replace("§", "&")    

@@ -1,8 +1,6 @@
-import json
 import os
+import json
 from discord.ext import commands, tasks
-from discord import HTTPException
-from mcfetch import Player
 
 from vixlib.api.polsu import fetch_polsu_data
 import vixlib as lib
@@ -55,7 +53,7 @@ class BedwarsUpdates(commands.Cog):
                         new_pos = player["position"]
                         old_pos = old_players.get(uuid)
 
-                        player_name = lib.format_lb_name(player["formatted"])
+                        player_name = lib.format_name(player["formatted"])
                         value = player["value"]
 
                         if old_pos is None:
@@ -74,7 +72,7 @@ class BedwarsUpdates(commands.Cog):
                     for old_player in old_leaderboard:
                         uuid = old_player["uuid"]
                         if uuid not in current_uuids:
-                            player_name = lib.format_lb_name(old_player["formatted"])
+                            player_name = lib.format_name(old_player["formatted"])
                             value = old_player["value"]
                             old_pos = old_player["position"]
                             emoji = lib.RED_DOT
@@ -86,7 +84,7 @@ class BedwarsUpdates(commands.Cog):
                     if changes_list:
                         channel = self.client.get_channel(lb_info["channel_id"])
                         if channel:
-                            header = f"**{mode} {lb_info['display_name']} Updates**\n"
+                            header = f"**{mode.title()} {lb_info['display_name']} Updates**\n"
                             max_length = 2000
                             chunk = header
                             for line in changes_list:
