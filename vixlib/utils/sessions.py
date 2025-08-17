@@ -1,8 +1,7 @@
 from datetime import datetime
-from vixlib import ensure_cursor, Cursor
 
+from vixlib import ensure_cursor, Cursor
 from vixlib.hypixel import BedwarsStats
-import vixlib as lib
 
 
 class Session:
@@ -10,9 +9,9 @@ class Session:
         self.uuid = uuid
 
     @ensure_cursor
-    def start_session(self, bedwars_data: dict, *, cursor: Cursor = None) -> None:
-        bedwars_stats = BedwarsStats(bedwars_data)
-
+    def start_session(
+        self, hypixel_data: dict, *, cursor: Cursor = None
+    ) -> None:
         modes = {
             "Overall": "",
             "Solos": "eight_one_",
@@ -21,28 +20,49 @@ class Session:
             "Fours": "four_four_",
             "4v4": "two_four_",
         }
+
+        fields = [
+            "wins",
+            "losses",
+            "final_kills",
+            "final_deaths",
+            "kills",
+            "deaths",
+            "beds_broken",
+            "beds_lost",
+            "games_played",
+            "items_purchased",
+            "tools_purchased",
+            "resources_collected",
+            "iron_collected",
+            "gold_collected",
+            "diamonds_collected",
+            "emeralds_collected",
+            "coins",
+        ]
+
         stats_dict = {
             "uuid": self.uuid,
             "created_at": datetime.now(),
-            "experience": bedwars_stats.get_experience,
         }
 
+        overall = BedwarsStats(hypixel_data, "Overall")
+        stats_dict["experience"] = overall.experience
+
         for mode, prefix in modes.items():
-            mode_stats = bedwars_stats.get_stats_by_mode(mode)
-            for key, value in mode_stats.items():
-                if key in {"wlr", "fkdr", "kdr", "bblr", "winstreak", "total_games"}:
+            stats = BedwarsStats(hypixel_data, mode)
+
+            mode_values = {k: getattr(stats, k, None) for k in fields}
+
+            for key, value in mode_values.items():
+                if value is None:
                     continue
-                if mode == "Overall":
-                    col_name = f"{key}_bedwars"
-                else:
-                    col_name = f"{prefix}{key}_bedwars"
-                
-                if col_name in lib.VALID_COLUMNS:
-                    stats_dict[col_name] = value
+
+                col_name = f"{key}_bedwars" if mode == "Overall" else f"{prefix}{key}_bedwars"
+                stats_dict[col_name] = value
 
         columns = ", ".join(stats_dict.keys())
         placeholders = ", ".join(["%s"] * len(stats_dict))
-
         update_assignments = ", ".join(
             f"{col} = VALUES({col})" for col in stats_dict.keys() if col != "uuid"
         )
@@ -82,7 +102,4 @@ class Session:
             "SELECT experience FROM sessions WHERE uuid=%s", (self.uuid,)
         )
         result = cursor.fetchone()
-        return result[0] if result else None   
-    
-
-
+        return result[0] if result else None 

@@ -1,12 +1,10 @@
 from datetime import datetime
-from typing import Union, Dict, Any
 from dateutil.relativedelta import relativedelta
 
-import vixlib as lib
-from mcfetch import Player
+from typing import Union, Dict, Any
 
 
-def started_on(date_input) -> str:
+def format_timestamp(date_input) -> str:
     if isinstance(date_input, datetime):
         past = date_input
     else:
@@ -35,36 +33,12 @@ def started_on(date_input) -> str:
     return f"{date_formatted} ({ago})"
 
 
-RATIO_STATS = {"wlr", "kdr", "fkdr", "bblr"}
-
-
-def format_footer_value(
-    key: str, 
-    val: Union[int, float, None], 
-    lb_info: Dict[str, Any]
-) -> str:
-    
-    label = lb_info['display_name']
-    if key in RATIO_STATS:
-        label = key.upper()
-    try:
-        if val is None:
-            return f"{label}: N/A"
-        if key in RATIO_STATS:
-            return f"{label}: {float(val):.2f}"
-        else:
-            return f"{label}: {int(float(val)):,}"
-    except Exception:
-        return f"{label}: {val}"
-    
-
 def format_value(
     key: str,
     val: Union[int, float, None],
 ) -> str:
 
     RATIO_STATS = {"FKDR", "WLR", "BBLR", "KDR"}
-
     try:
         if val is None:
             return "N/A"
@@ -77,40 +51,7 @@ def format_value(
         return str(val)
     
 
-def strip_minecraft_formatting(s: str) -> str:
-    if not s:
-        return ""
-    return s.replace("§", "&")
-
-
-
-async def get_leaderboard_page(
-    data: dict,
-    player: str,
-) -> tuple[int | None, int | None]:
-
-    uuid = Player(player=player, requests_obj=lib.CACHE).uuid
-    if not uuid:
-        return None, None
-
-    undashed_uuid = uuid.replace('-', '')
-
-    leaderboard = data.get("data", {}).get("leaderboard", [])
-    index = next(
-        (i for i, p in enumerate(leaderboard) if str(p.get('uuid', '')).replace('-', '') == undashed_uuid),
-        None
-    )
-
-    if index is None:
-        return None, None
-    
-    page = index // 10 + 1
-    pos = index % 10 + 1
-
-    return page, pos
-
-
-def format_lb_name(name: str) -> str:
+def format_name(name: str) -> str:
     result = ""
     skip_next = False
     for char in name:
@@ -122,3 +63,9 @@ def format_lb_name(name: str) -> str:
             continue
         result += char
     return result
+
+
+def format_name_colored(name: str) -> str:
+    if not name:
+        return ""
+    return name.replace("§", "&")    

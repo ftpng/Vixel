@@ -1,11 +1,11 @@
 from mcfetch import Player
 from discord import Interaction
 
-from vixlib.helpers import Linking
-import vixlib as lib
+from .linking import Linking
+from vixlib.api import MOJANG_CACHE
 
 
-async def fetch_player_info(
+async def fetch_player(
     player: str,
     interaction: Interaction
 ) -> str | None:
@@ -14,12 +14,14 @@ async def fetch_player_info(
         if not uuid:
             if interaction.response.is_done():
                 await interaction.edit_original_response(
-                    content="You are not linked! Either specify a player or link your account using `/link`!"
+                    content="You are not linked! Either specify a player or link your account using **/link**!"
                 )
                 return None
         
     else:
-        uuid = Player(player=player, requests_obj=lib.CACHE).uuid
+        uuid = Player(
+            player=player, requests_obj=MOJANG_CACHE).uuid
+        
         if uuid is None:
             await interaction.edit_original_response(
                 content=f"**{player}** does not exist! Please provide a valid username."
@@ -27,7 +29,3 @@ async def fetch_player_info(
             return None
         
     return uuid
-
-
-
-        

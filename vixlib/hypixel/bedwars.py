@@ -1,79 +1,65 @@
+from .leveling import Leveling
+from .utils import (
+    get_player_dict,
+    get_most_played_mode,
+    BEDWARS_MODES_MAP,
+)
+
+
 class BedwarsStats:
-    def __init__(self, bedwars_data: dict) -> None:
-        self.bedwars_data = bedwars_data
+    def __init__(self, hypixel_data: dict, gamemode: str = 'Overall'):
+        self._gamemode = gamemode
+        self._hypixel_player_data = get_player_dict(hypixel_data)
 
-    def _get_bedwars_stats_mode(self, prefix: str) -> dict:
-        def get_stat(key):
-            return self.bedwars_data.get(f"{prefix}{key}", 0)
+        self._bedwars_data: dict = self._hypixel_player_data.get('stats', {}).get('Bedwars', {})
 
-        wins = get_stat("wins_bedwars")
-        losses = get_stat("losses_bedwars")
-        wlr = round(wins / losses, 2) if losses > 0 else wins
+        self.wins = self._get_mode_stats('wins_bedwars')
+        self.losses = self._get_mode_stats('losses_bedwars')
+        self.wlr = self._get_ratio(self.wins, self.losses)
 
-        finals = get_stat("final_kills_bedwars")
-        final_deaths = get_stat("final_deaths_bedwars")
-        fkdr = round(finals / final_deaths, 2) if final_deaths > 0 else finals
+        self.final_kills = self._get_mode_stats('final_kills_bedwars')
+        self.final_deaths = self._get_mode_stats('final_deaths_bedwars')
+        self.fkdr = self._get_ratio(self.final_kills, self.final_deaths)
 
-        kills = get_stat("kills_bedwars")
-        deaths = get_stat("deaths_bedwars")
-        kdr = round(kills / deaths, 2) if deaths > 0 else kills
+        self.kills = self._get_mode_stats('kills_bedwars')
+        self.deaths = self._get_mode_stats('deaths_bedwars')
+        self.kdr = self._get_ratio(self.kills, self.deaths)
 
-        beds_broken = get_stat("beds_broken_bedwars")
-        beds_lost = get_stat("beds_lost_bedwars")
-        bblr = round(beds_broken / beds_lost, 2) if beds_lost > 0 else beds_broken
+        self.beds_broken = self._get_mode_stats('beds_broken_bedwars')
+        self.beds_lost = self._get_mode_stats('beds_lost_bedwars')
+        self.bblr = self._get_ratio(self.beds_broken, self.beds_lost)
 
-        winstreak = get_stat("winstreak")
-        total_games = get_stat("games_played_bedwars")
+        self.games_played = self._get_mode_stats('games_played_bedwars')
+        self.most_played = get_most_played_mode(self._bedwars_data)
 
-        return {
-            "wins": wins,
-            "losses": losses,
-            "wlr": wlr,
-            "final_kills": finals,
-            "final_deaths": final_deaths,
-            "fkdr": fkdr,
-            "kills": kills,
-            "deaths": deaths,
-            "kdr": kdr,
-            "beds_broken": beds_broken,
-            "beds_lost": beds_lost,
-            "bblr": bblr,
-            "winstreak": winstreak,
-            "total_games": total_games
-        }
+        self.experience = self._bedwars_data.get('Experience', 0)
 
-    def get_stats_by_mode(self, mode: str) -> dict:
-        modes = {
-            "Overall": "",
-            "Solos": "eight_one_",
-            "Doubles": "eight_two_",
-            "Threes": "four_three_",
-            "Fours": "four_four_",
-            "4v4": "two_four_",
-        }
-        prefix = modes.get(mode)
+        self.leveling = Leveling(xp=self.experience)
+        self.level = self.leveling.level
 
-        return self._get_bedwars_stats_mode(prefix)
-    
+        self.items_purchased = self._get_mode_stats('items_purchased_bedwars')
+        self.tools_purchased = self._get_mode_stats('permanent_items_purchased_bedwars')
 
-    @property
-    def most_played(self):
-        modes = {
-            "Solos": self.bedwars_data.get("eight_one_games_played_bedwars", 0),
-            "Doubles": self.bedwars_data.get("eight_two_games_played_bedwars", 0),
-            "Threes": self.bedwars_data.get("four_three_games_played_bedwars", 0),
-            "Fours": self.bedwars_data.get("four_four_games_played_bedwars", 0),
-            "4v4": self.bedwars_data.get("two_four_games_played_bedwars", 0),
-        }
+        self.resources_collected = self._get_mode_stats('resources_collected_bedwars')
+        self.iron_collected = self._get_mode_stats('iron_resources_collected_bedwars')
+        self.gold_collected = self._get_mode_stats('gold_resources_collected_bedwars')
+        self.diamonds_collected = self._get_mode_stats('diamond_resources_collected_bedwars')
+        self.emeralds_collected = self._get_mode_stats('emerald_resources_collected_bedwars')      
 
-        most_played_mode = max(modes, key=modes.get)
-        return most_played_mode
-    
+        self.coins = self._bedwars_data.get('coins', 0)
 
-    @property
-    def get_experience(self):
-        experience = self.bedwars_data.get("Experience", 0)
-
-        return experience
+        self.winstreak = self._get_mode_stats('winstreak')
+        if self.winstreak is not None:
+            self.winstreak_str = f'{self.winstreak:,}'
+        else:
+            self.winstreak_str = 'API Off'
+            self.winstreak = 0        
 
 
+    def _get_ratio(self, val_1: int, val_2: int) -> float:
+        return round(float(val_1) / (val_2 or 1), 2)
+
+
+    def _get_mode_stats(self, key: str, default=0) -> int:
+        prefix = BEDWARS_MODES_MAP.get(self._gamemode)
+        return self._bedwars_data.get(f'{prefix}{key}', default)

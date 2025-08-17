@@ -39,7 +39,9 @@ class ModesView(View):
         org_user: int,
         uuid: str,
         mode: str,
-        type: str,
+        hypixel_data: dict,
+        polsu_data: dict = None,
+        type: str = 'bedwars',
         timeout: int = 180
     ):
         super().__init__(timeout=timeout)
@@ -48,37 +50,36 @@ class ModesView(View):
         self.interaction: Interaction = interaction  
         self.uuid: str = uuid
         self.type: str = type
+        self.hyp_data: dict = hypixel_data
+        self.polsu_data: dict = polsu_data
 
         self.add_item(ModeSelector())
 
     async def update_mode(self, interaction: Interaction):
-
         if self.type == 'bedwars':
-            await render_bedwars_stats(self.uuid, self.mode)
-            await interaction.edit_original_response(
-                attachments=[File(f"{lib.DIR}assets/imgs/bedwars.png")],
-                view=self
-            )
+            await render_bedwars_stats(self.uuid, self.mode, self.hyp_data, self.polsu_data)
+            file = File(f"{lib.DIR}assets/imgs/bedwars.png")
+
+            if interaction.user.id == self.org_user:
+                await interaction.edit_original_response(
+                    attachments=[file],
+                    view=self
+                )   
+            else:
+                await interaction.followup.send(file=file, ephemeral=True)            
         
         elif self.type == 'session':
-            await render_session_stats(self.uuid, self.mode)
-            await interaction.edit_original_response(
-                attachments=[File(f"{lib.DIR}assets/imgs/session.png")],
-                view=self
-            )            
-        
-    async def interaction_check(self, interaction: Interaction):
-        if self.org_user == 0:
-            return True
-            
-        if interaction.user.id != self.org_user:
-            await interaction.response.send_message(
-                content=f"That message doesn't belong to you. You must run this command to interact with it.",
-                ephemeral=True
-            )
-            return False
-        return True
+            await render_session_stats(self.uuid, self.mode, self.hyp_data)
+            file = File(f"{lib.DIR}assets/imgs/session.png")
 
+            if interaction.user.id == self.org_user:
+                await interaction.edit_original_response(
+                    attachments=[file],
+                    view=self
+                )   
+            else:
+                await interaction.followup.send(file=file, ephemeral=True)           
+        
     async def on_timeout(self):
         self.clear_items()
         await self.interaction.edit_original_response(view=None)

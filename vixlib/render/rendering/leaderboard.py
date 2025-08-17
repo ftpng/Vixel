@@ -3,6 +3,7 @@ from vixlib.hypixel import BedwarsStats, Leveling
 from vixlib.render import DisplayName
 
 import vixlib as lib
+from vixlib.api.polsu import fetch_polsu_data
 
 
 async def render_leaderboard(
@@ -24,10 +25,10 @@ async def render_leaderboard(
     im = ImageRender(bg.load_default_background())
 
     im.text.draw_many([
-        (f'&f{mode} {type} Leaderboard', {'position': (413, 53)}),
+        (f'&f{mode.title()} {type.title()} Leaderboard', {'position': (413, 53)}),
         (f'&fPos', {'position': (76, 100)}),
         (f'&fPlayers', {'position': (368, 100)}),
-        (f'&f{type}', {'position': (705, 100)}),
+        (f'&f{type.title()}', {'position': (705, 100)}),
     ], default_text_options={
         "shadow_offset": (2, 2), "align": "center", "font_size": 18}
     )
@@ -62,8 +63,8 @@ async def render_leaderboard(
             "align": "center"
         })
         
-        formatted_name = await lib.fetch_polsu_bedwars_formatted_name(uuid)
-        displayname = lib.strip_minecraft_formatting(formatted_name["data"]["formatted"])
+        formatted_name = await fetch_polsu_data("formatted", uuid=uuid)
+        displayname = lib.format_name_colored(formatted_name["data"]["formatted"])
 
         im.text.draw(
             f"{displayname}", 
@@ -85,14 +86,11 @@ async def render_leaderboard(
             }
         )
 
-        #await im.skin.paste_skin(
+        # await im.skin.paste_skin(
         #    uuid, position=(131, y_skin), size=(20, 20), style='face'
-        #)
+        # )
 
         y += 46
         y_skin += 46
 
     im.save(f"{lib.DIR}assets/imgs/leaderboard.png")
-
-        
-

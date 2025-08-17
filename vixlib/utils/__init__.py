@@ -1,9 +1,10 @@
+from .player import fetch_player
 from .linking import Linking
 from .sessions import Session
-from .fetch_player import fetch_player_info
+
 
 __all__ = [
+    'fetch_player',
     'Linking',
-    'Session',
-    'fetch_player_info'
+    'Session'
 ]

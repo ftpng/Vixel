@@ -1,12 +1,11 @@
 from PIL import Image, UnidentifiedImageError 
 from typing import Literal, TypedDict
 from io import BytesIO
-from vixlib.hypixel import Leveling
 
 from .text import render_mc_text
-from .colors import Prestige
+from .prestige import Prestige
 
-import vixlib as lib
+from vixlib.api import fetch_skin_model
 
 
 class TextOptions(TypedDict):
@@ -83,41 +82,34 @@ class ProgressRender:
         self._text_render = text_render  
     
 
-    async def render_progress_bar(
-        self, 
-        level: float, 
-        xp: int,
-        progress_percentage: float,
+    async def draw_progress_bar(
+        self,
+        level: int,
+        progress_percentage: int | float,
+        current_xp: int | float,
         positions: dict, 
         font_size: int
     ) -> None:
-
-        int_level = int(level)
-        current_xp = xp
+        
+        xp_bar_progress = self.progress_bar_max * progress_percentage / 100
 
         if current_xp < 500:
             min_colored_boxes = 1
         elif 500 <= current_xp < 1000:
             min_colored_boxes = 2
         else:
-            min_colored_boxes = 0  
-        
-        xp_bar_progress = self.progress_bar_max * progress_percentage / 100
-        colored_boxes = max(int(xp_bar_progress), min_colored_boxes)
-        
-        if colored_boxes > self.progress_bar_max:
-            colored_boxes = self.progress_bar_max
+            min_colored_boxes = 0
 
-        colored_chars = self.progress_symbol * colored_boxes
-        gray_chars = self.progress_symbol * (self.progress_bar_max - colored_boxes)
+        colored_count = max(int(xp_bar_progress), min_colored_boxes)
+        colored_chars = self.progress_symbol * colored_count
+        gray_chars = self.progress_symbol * (self.progress_bar_max - colored_count)
 
         chars_text = f'&b{colored_chars}&7{gray_chars}'
-
-        formatted_level_text = f"{Prestige(int_level).formatted_level} &8[" 
-        formatted_target_level_text = f"&8] {Prestige(int_level + 1).formatted_level}"
+        formatted_lvl_text = Prestige(int(level)).color_level
+        formatted_target_text = Prestige(int(level) + 1).color_level
 
         self._text_render.draw(
-            text=f'{formatted_level_text}',
+            text=f'{formatted_lvl_text} &8[',
             text_options={
                 "font_size": font_size,
                 "position": positions.get('left'),
@@ -135,7 +127,7 @@ class ProgressRender:
             }
         )
         self._text_render.draw(
-            text=f'{formatted_target_level_text}',
+            text=f'&8] {formatted_target_text}',
             text_options={
                 "font_size": font_size,
                 "position": positions.get('right'),
@@ -144,16 +136,15 @@ class ProgressRender:
             }
         )
 
-
-    async def render_progression(
+    async def draw_progression(
         self, 
-        xp: int, 
-        xp_needed: int,
+        progress: int,
+        target: int,
         position: tuple[int, int], 
         font_size: int        
     ) -> None:
         self._text_render.draw(
-            text=f'&7EXP Progress: &b{xp:,}&8/&a{xp_needed:,}',
+            text=f'&7EXP Progress: &b{progress:,}&8/&a{target:,}',
             text_options={
                 "font_size": font_size,
                 "position": position,
@@ -162,14 +153,14 @@ class ProgressRender:
             }
         )
 
-    async def render_prestige(
+    async def draw_prestige(
         self, 
         level: int, 
         position: tuple[int, int], 
         font_size: int
     ) -> None:
         self._text_render.draw(
-            text=f'&7Level: {level}',
+            text=f'&7Level: {Prestige(int(level)).color_level}',
             text_options={
                 "font_size": font_size,
                 "position": position,
@@ -185,7 +176,7 @@ class SkinRender:
         self._text_render = text_render 
 
     async def _skin_url(self, uuid: str, style: str):
-        return await lib.fetch_skin_model(uuid, style=style)
+        return await fetch_skin_model(uuid, style=style)
 
     async def paste_skin(
         self, 
@@ -207,11 +198,7 @@ class SkinRender:
 
             self._image.alpha_composite(composite_image)
 
-        except UnidentifiedImageError as error:
-            from vixlib.logging import log_error
-            log_error(str(error))
+        except (UnidentifiedImageError, Exception) as error:
+            print(error)
 
-        except Exception as error:
-            from vixlib.logging import log_error
-            log_error(str(error))
             

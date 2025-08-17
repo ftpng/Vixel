@@ -1,9 +1,12 @@
 import discord
-from discord import Interaction
+from discord import Interaction, File
 from mcfetch import Player
 
 import vixlib as lib
 from vixlib.render.rendering import render_leaderboard
+from vixlib.api.polsu import fetch_polsu_data
+from vixlib.api import MOJANG_CACHE
+
 
 class NavButton(discord.ui.Button):
     def __init__(self, label: str, direction: str, disabled: bool):
@@ -94,29 +97,24 @@ class LeaderboardView(discord.ui.View):
     async def update_page(self, interaction: Interaction):
         self.update_buttons()
 
-        data = await lib.fetch_polsu_bedwars_leaderboard(
+        data = await fetch_polsu_data(
+            "leaderboard",
             mode=self.mode_value, 
             type_=self.type_value, 
             top=100
         )  
         
         await render_leaderboard(data, mode=self.mode_name, type=self.type_name, page=self.current_page)
+        file = File(f"{lib.DIR}assets/imgs/bedwars.png") 
 
-        attachment = [discord.File(f"{lib.DIR}assets/imgs/leaderboard.png")]
+        if interaction.user.id == self.org_user:
+            await interaction.edit_original_response(
+                attachments=[file],
+                view=self
+            )   
+        else:
+            await interaction.followup.send(file=file, ephemeral=True)
 
-        await interaction.edit_original_response(content='', attachments=attachment, view=self)
-
-
-    async def interaction_check(self, interaction: Interaction):
-        if self.org_user == 0:
-            return True
-        if interaction.user.id != self.org_user:
-            await interaction.response.send_message(
-                content=f"That message doesn't belong to you. You must run this command to interact with it.",
-                ephemeral=True
-            )
-            return False
-        return True
 
     async def on_timeout(self):
         self.clear_items()
@@ -194,7 +192,8 @@ class SearchPlayerModal(discord.ui.Modal, title="Find Player"):
 
         player = self.player_input.value.strip()
 
-        data = await lib.fetch_polsu_bedwars_leaderboard(
+        data = await fetch_polsu_data(
+            "leaderboard",
             mode=self._view.mode_value, 
             type_=self._view.type_value, 
             top=100
@@ -202,7 +201,7 @@ class SearchPlayerModal(discord.ui.Modal, title="Find Player"):
         new_page, pos = await lib.get_leaderboard_page(data, player)
         
         if new_page is None or pos is None:
-            uuid = Player(player=player, requests_obj=lib.CACHE).uuid
+            uuid = Player(player=player, requests_obj=MOJANG_CACHE).uuid
             if not uuid:
                 return await interaction.followup.send(
                     f"**{player}** does not exist! Please provide a valid username.", ephemeral=True)

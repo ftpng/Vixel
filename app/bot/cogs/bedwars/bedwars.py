@@ -1,11 +1,13 @@
 from discord.ext import commands
 from discord import app_commands, Interaction, File
-import vixlib as lib 
 
 from vixlib.render.rendering import render_bedwars_stats
-from vixlib.helpers import fetch_player_info
-from vixlib.logging import handle_slash_errors
+from vixlib.api.polsu import fetch_polsu_data
+from vixlib.api.hypixel import fetch_hypixel_player_data
+from vixlib.utils import fetch_player
 from vixlib.views import ModesView
+
+import vixlib as lib
 
 
 class Bedwars(commands.Cog):
@@ -24,21 +26,29 @@ class Bedwars(commands.Cog):
         mode: str = 'Overall'
     ):
         await interaction.response.defer()
-        try:
-            uuid = await fetch_player_info(player, interaction)
-            if uuid is None:
-                return None
-  
-            await render_bedwars_stats(uuid, mode)
-            await interaction.edit_original_response(
-                attachments=[File(f"{lib.DIR}assets/imgs/bedwars.png")],
-                view=ModesView(
-                    interaction, interaction.user.id, uuid, mode, type='bedwars'
-                )
-            )
 
-        except Exception as error:
-            await handle_slash_errors(interaction, error)
+        uuid = await fetch_player(player, interaction)
+        if uuid is None:
+            return None
+  
+        hypixel_data: dict = await fetch_hypixel_player_data(uuid, include_guild=True)
+        polsu_data: dict = await fetch_polsu_data("ping", uuid=uuid)
+
+        if not hypixel_data or not polsu_data:
+            await interaction.edit_original_response(
+                content=lib.ERROR_MESSAGE
+            )
+            return None
+
+        await render_bedwars_stats(
+            uuid, mode, hypixel_data, polsu_data
+        )
+        await interaction.edit_original_response(
+            attachments=[File(f"{lib.DIR}assets/imgs/bedwars.png")],
+            view=ModesView(
+                interaction, interaction.user.id, uuid, mode, hypixel_data, polsu_data, type='bedwars', 
+            )
+        )        
 
 async def setup(client: commands.Bot) -> None:
     await client.add_cog(Bedwars(client))

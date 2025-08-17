@@ -15,31 +15,14 @@ def load_font(font_file: str, font_size: int) -> ImageFont.FreeTypeFont:
 
 
 def calc_shadow_color(rgb: tuple) -> tuple[int, int, int]:
-    """
-    Calculate the drop shadow RGB value for a given RGB value.
-
-    :param rgb: The RGB value to calculate a shadow color for.
-    """
     return tuple([int(c * 0.25) for c in rgb])
 
 
 def get_text_len(text: str, font: ImageFont.ImageFont):
-    """
-    Get the length of a string (accounting for symbols).
-
-    :param text: The text to find the length of.
-    :param font: The font to use in the calculation.
-    """
     return dummy_draw.textlength(text, font=font)
 
 
 def get_actual_text(text: str) -> str:
-    """
-    Remove color codes from text.
-
-    :param text: The text to remove color codes from.
-    :return str: The text without color codes.
-    """
     split_chars = tuple(ColorMappings.color_codes)
     bits = tuple(split_string(text, split_chars))
 
@@ -54,22 +37,6 @@ def get_start_point(
     pos: int=0,
     text_len: int=None
 ) -> int:
-    """
-    Calculate the starting X position for rendering
-    text with the specified settings.
-
-    A pre-calculated text length can be provided, otherwise one will
-    be calculated using the provided font.
-
-    *__Either__ `font` and `text`, or `text_len` must be provided.*
-
-    :param text: The text to calculate the starting X position for.
-    :param font: The font that the text will be rendered in.
-    :param align: The text alignment / anchor. Defaults to 'left'.
-    :param pos: The relative X position. Defaults to 0.
-    :param text_len: A pre-calculated custom text length.
-    :return int: The calculated starting X position for the text.
-    """
     assert (text, font, text_len).count(None) > 0
 
     if text_len is None:
@@ -96,16 +63,6 @@ def render_mc_text(
     shadow_offset: tuple[int, int] = None,
     align: Literal['left', 'center', 'right'] = 'left'
 ) -> int:
-    """
-    Renders text on an image, supporting Minecraft-style color and format codes.
-
-    Supports:
-    - &0 to &f: Color codes
-    - &l: Bold
-    - &r: Reset formatting
-
-    :return int: Final X position after rendering
-    """
     assert (font, font_size).count(None) > 0
 
     if font is None:

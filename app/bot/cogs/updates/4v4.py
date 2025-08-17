@@ -1,84 +1,10 @@
-import json
 import os
+import json
 from discord.ext import commands, tasks
-from discord import HTTPException
-from mcfetch import Player
-from vixlib.render import Prestige
-from vixlib.hypixel import Leveling
+
+from vixlib.api.polsu import fetch_polsu_data
 import vixlib as lib
 
-BEDWARS_LEADERBOARDS_4v4 = {
-    "winstreak": {
-        "path": f"{lib.DIR}data/4v4/bedwars_winstreak.json",
-        "channel_id": lib.FOUR_VS_FOUR_WINSTREAK_CHANNEL,
-        "display_name": "Winstreak"
-    },
-    "games_played": {
-        "path": f"{lib.DIR}data/4v4/bedwars_games.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Games Played"
-    },
-    "wins": {
-        "path": f"{lib.DIR}data/4v4/bedwars_wins.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Wins"
-    },
-    "losses": {
-        "path": f"{lib.DIR}data/4v4/bedwars_losses.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Losses"
-    },
-    "wlr": {
-        "path": f"{lib.DIR}data/4v4/bedwars_wlr.json",
-        "channel_id": lib.FOUR_VS_FOUR_WLR_CHANNEL,
-        "display_name": "WLR"
-    },
-    "kills": {
-        "path": f"{lib.DIR}data/4v4/bedwars_kills.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Kills"
-    },
-    "deaths": {
-        "path": f"{lib.DIR}data/4v4/bedwars_deaths.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Deaths"
-    },
-    "kdr": {
-        "path": f"{lib.DIR}data/4v4/bedwars_kdr.json",
-        "channel_id": lib.FOUR_VS_FOUR_KDR_CHANNEL,
-        "display_name": "KDR"
-    },
-    "final_kills": {
-        "path": f"{lib.DIR}data/4v4/bedwars_final_kills.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Final Kills"
-    },
-    "final_deaths": {
-        "path": f"{lib.DIR}data/4v4/bedwars_final_deaths.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Final Deaths"
-    },
-    "fkdr": {
-        "path": f"{lib.DIR}data/4v4/bedwars_fkdr.json",
-        "channel_id": lib.FOUR_VS_FOUR_FKDR_CHANNEL,
-        "display_name": "FKDR"
-    },
-    "beds_broken": {
-        "path": f"{lib.DIR}data/4v4/bedwars_beds_broken.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Beds Broken"
-    },
-    "beds_lost": {
-        "path": f"{lib.DIR}data/4v4/bedwars_beds_lost.json",
-        "channel_id": lib.FOUR_VS_FOUR_STATS_CHANNEL,
-        "display_name": "Beds Lost"
-    },
-    "bblr": {
-        "path": f"{lib.DIR}data/4v4/bedwars_bblr.json",
-        "channel_id": lib.FOUR_VS_FOUR_BBLR_CHANNEL,
-        "display_name": "BBLR"
-    },
-}
 
 class BedwarsUpdates4v4(commands.Cog):
     def __init__(self, client: commands.Bot):
@@ -88,9 +14,14 @@ class BedwarsUpdates4v4(commands.Cog):
     @tasks.loop(minutes=5)
     async def update_message(self):
         try:
-            for lb_key, lb_info in BEDWARS_LEADERBOARDS_4v4.items():
-                data = await lib.fetch_polsu_bedwars_leaderboard(
-                    mode="4v4",
+
+            mode = "4v4"
+            leaderboards = lib.BEDWARS_LEADERBOARDS[mode]
+
+            for lb_key, lb_info in leaderboards.items():
+                data = await fetch_polsu_data(
+                    "leaderboard",
+                    mode=mode,
                     type_=lb_key,
                     top="100"
                 )
@@ -114,9 +45,9 @@ class BedwarsUpdates4v4(commands.Cog):
                     old_players = {p['uuid']: p['position'] for p in old_leaderboard}
                 else:
                     old_players = {}
+                    old_leaderboard = []
 
                 changes_list = []
-
                 current_uuids = set()
 
                 for player in new_players:
@@ -125,7 +56,7 @@ class BedwarsUpdates4v4(commands.Cog):
                     new_pos = player["position"]
                     old_pos = old_players.get(uuid)
 
-                    player_name = lib.format_lb_name(player["formatted"])
+                    player_name = lib.format_name(player["formatted"])
                     value = player["value"]
 
                     if old_pos is None:
@@ -135,10 +66,7 @@ class BedwarsUpdates4v4(commands.Cog):
                             f"*({lib.format_value(lb_key, value)} {lb_info['display_name']})*"
                         )
                     elif old_pos != new_pos:
-                        if new_pos < old_pos:
-                            emoji = lib.GREEN_DOT
-                        else:
-                            emoji = lib.RED_DOT
+                        emoji = lib.GREEN_DOT if new_pos < old_pos else lib.RED_DOT
                         changes_list.append(
                             f"> {emoji} `{player_name}` position updated: `{old_pos}` ➡ `{new_pos}` "
                             f"*({lib.format_value(lb_key, value)} {lb_info['display_name']})*"
@@ -146,13 +74,10 @@ class BedwarsUpdates4v4(commands.Cog):
 
                 for old_player in old_leaderboard:
                     uuid = old_player["uuid"]
-
                     if uuid not in current_uuids:
-                        player_name = lib.format_lb_name(old_player["formatted"])
-
+                        player_name = lib.format_name(old_player["formatted"])
                         value = old_player["value"]
                         old_pos = old_player["position"]
-                        
                         emoji = lib.RED_DOT
                         changes_list.append(
                             f"> {emoji} `{player_name}` left the top 100 (Old position: `{old_pos}`) "
@@ -162,23 +87,17 @@ class BedwarsUpdates4v4(commands.Cog):
                 if changes_list:
                     channel = self.client.get_channel(lb_info["channel_id"])
                     if channel:
-                        header = f"**4v4 {lb_info['display_name']} Updates**\n"
+                        header = f"**{mode.title()} {lb_info['display_name']} Updates**\n"
                         max_length = 2000
                         chunk = header
                         for line in changes_list:
                             if len(chunk) + len(line) + 1 > max_length:
-                                try:
-                                    await channel.send(content=chunk)
-                                except HTTPException as e:
-                                    print(f"Failed to send message chunk: {e}")
+                                await channel.send(content=chunk)
                                 chunk = header + line + "\n"
                             else:
                                 chunk += line + "\n"
                         if chunk.strip():
-                            try:
-                                await channel.send(content=chunk)
-                            except HTTPException as e:
-                                print(f"Failed to send message chunk: {e}")
+                            await channel.send(content=chunk)
 
                 with open(lb_info["path"], "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=4, ensure_ascii=False)
@@ -190,6 +109,7 @@ class BedwarsUpdates4v4(commands.Cog):
 
     def cog_unload(self):
         self.update_message.cancel()
+
 
 async def setup(client: commands.Bot):
     await client.add_cog(BedwarsUpdates4v4(client))
