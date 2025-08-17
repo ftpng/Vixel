@@ -1,6 +1,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
+from typing import Union, Dict, Any
 
 
 def format_timestamp(date_input) -> str:
@@ -30,3 +31,35 @@ def format_timestamp(date_input) -> str:
 
     date_formatted = past.strftime("%d/%m/%Y")
     return f"{date_formatted} ({ago})"
+
+
+def format_value(
+    key: str,
+    val: Union[int, float, None],
+) -> str:
+
+    RATIO_STATS = {"FKDR", "WLR", "BBLR", "KDR"}
+    try:
+        if val is None:
+            return "N/A"
+        if key in RATIO_STATS:
+            return str(val)
+        else:
+            return f"{int(float(val)):,}"
+        
+    except Exception:
+        return str(val)
+    
+
+def format_lb_name(name: str) -> str:
+    result = ""
+    skip_next = False
+    for char in name:
+        if skip_next:
+            skip_next = False
+            continue
+        if char == '§':
+            skip_next = True
+            continue
+        result += char
+    return result
