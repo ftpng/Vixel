@@ -46,8 +46,7 @@ class SessionBedwars(commands.Cog):
 
         has_session = Session(uuid).get_session()
         if not has_session:
-            bedwars_data = hypixel_data.get("player", {}).get("stats", {}).get("Bedwars", {})
-            Session(uuid).start_session(bedwars_data)           
+            Session(uuid).start_session(hypixel_data)           
 
 
         await render_session_stats(uuid, mode, hypixel_data)
@@ -70,9 +69,7 @@ class SessionBedwars(commands.Cog):
             )
             
         hypixel_data = await fetch_hypixel_player_data(uuid, cache=False)
-        bedwars_data = hypixel_data.get("player", {}).get("stats", {}).get("Bedwars", {})
-
-        Session(uuid).start_session(bedwars_data)
+        Session(uuid).start_session(hypixel_data)
 
         await interaction.edit_original_response(
             content="Successfully reset your session stats."

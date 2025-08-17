@@ -42,8 +42,7 @@ class Link(commands.Cog):
             if has_active_session:
                 return
 
-            bedwars_data = hypixel_data.get("player", {}).get("stats", {}).get("Bedwars", {})
-            Session(uuid).start_session(bedwars_data) 
+            Session(uuid).start_session(hypixel_data) 
 
         else:
             embed = Embed(
