@@ -86,7 +86,7 @@ class BedwarsUpdates(commands.Cog):
                     if changes_list:
                         channel = self.client.get_channel(lb_info["channel_id"])
                         if channel:
-                            header = f"**{mode.upper()} {lb_info['display_name']} Updates**\n"
+                            header = f"**{mode} {lb_info['display_name']} Updates**\n"
                             max_length = 2000
                             chunk = header
                             for line in changes_list:
